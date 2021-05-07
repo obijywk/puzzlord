@@ -30,7 +30,7 @@
 }
 
 [data-theme="dark"] {
-	--lightness: 25%;
+	--lightness: 20%;
 	
 	--bg: #131516;
 	--secondary-bg: #262A2C;
@@ -262,14 +262,22 @@ table.classic td {
 	width: 100%;
 }
 @media (min-width: 800px) {
-	.puzzle-inner {
-		display: flex;
+	.puzzle-outer {
+		display: grid;
+		grid-template-columns: 1fr minmax(min-content, 20vw);
+		grid-template-rows: auto 1fr;
+		grid-template-areas:
+			"title sidebar"
+			"content sidebar";
+	}
+	.puzzle-title {
+		grid-area: title;
 	}
 	.puzzle-side {
-		width: 30%;
+		grid-area: sidebar;
 	}
 	.puzzle-main {
-		width: 70%;
+		grid-area: content;
 	}
 }
 .puzzle-side {
