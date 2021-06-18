@@ -90,9 +90,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
 ]
 
 
@@ -129,6 +135,9 @@ LOGOUT_REDIRECT_URL = "/"
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # EMAIL_SUBJECT_PREFIX = ""
 
+EMAIL_SENDER = "FIXME email sender <fixme@example.com>"
+EMAIL_REPLY_TO = "FIXME_reply_to_address@example.com"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -157,7 +166,11 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django": {"handlers": ["django"], "level": "DEBUG", "propagate": True,},
+        "django": {
+            "handlers": ["django"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
         "puzzles.puzzle": {
             "handlers": ["puzzle"],
             "level": "DEBUG",
