@@ -180,7 +180,8 @@ class RegisterForm(forms.ModelForm):
     )
     discord_username = forms.CharField(
         label="Discord username",
-        help_text="(required) Discord username and tag (e.g. example#1234)",
+        required=False,
+        help_text="Discord username and tag (e.g. example#1234)"
     )
     credits_name = forms.CharField(
         label="Credits name",

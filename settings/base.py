@@ -135,6 +135,9 @@ LOGOUT_REDIRECT_URL = "/"
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # EMAIL_SUBJECT_PREFIX = ""
 
+EMAIL_SENDER = "FIXME email sender <fixme@example.com>"
+EMAIL_REPLY_TO = "FIXME_reply_to_address@example.com"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
