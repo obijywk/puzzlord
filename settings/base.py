@@ -197,3 +197,6 @@ HUNT_TIME = datetime.datetime(
     microsecond=0,
     tzinfo=datetime.timezone.utc,
 )
+
+# Ensure MEDIA_ROOT and MEDIA_URL are set appropriately when enabling file uploads.
+ENABLE_PUZZLE_FILE_UPLOADS = False
