@@ -10,8 +10,8 @@
 		<link rel="shortcut icon" href="{% static 'favicon.ico' %}"/>
 		<title>{% block title %}Puzzlord{% endblock %}</title>
 		<link rel="preconnect" href="https://fonts.gstatic.com">
-		<link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet"> 
-			
+		<link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+
 	</head>
 	<body>
 		<nav id="nav-menu">
@@ -19,19 +19,29 @@
 			{% with request.path as current_path %}
 			<div class="nav-links">
 				<a class="logo" href="/"><img class="logo" src="{% static 'puzzlord-logo.png' %}" alt="Puzzlord"/></a>
+				{% if perms.puzzle_editing.add_puzzle %}
 				{% nav_link current_path 'new' 'New Puzzle' %}
+				{% endif %}
+				{% if perms.puzzle_editing.add_puzzlecomment %}
 				{% nav_link current_path 'authored' 'Your Puzzles' %}
+				{% endif %}
+				{% if perms.puzzle_editing.add_testsolvesession %}
 				{% nav_link current_path 'testsolve_main' 'Testsolve' %}
+				{% endif %}
+				{% if perms.puzzle_editing.add_puzzlecomment %}
 				{% nav_link current_path 'factcheck' 'Factcheck' %}
 				{% nav_link current_path 'postprod' 'Postprod' %}
 				{% nav_link current_path 'all' 'All Puzzles' %}
+				{% endif %}
 				{% if perms.puzzle_editing.change_round %}
 				{% nav_link current_path 'awaiting_editor' 'Awaiting Editor' %}
 				{% nav_link current_path 'rounds' 'Rounds/Answers' %}
 				{% endif %}
+				{% if perms.puzzle_editing.add_puzzlecomment %}
 				{% nav_link current_path 'users' 'Users' %}
 				{% nav_link current_path 'tags' 'Tags' %}
 				{% nav_link current_path 'statistics' 'Statistics' %}
+				{% endif %}
 				<button id="menu-button" type="button" class="menu-button">&#9776;</button>
 			</div>
 			{% endwith %}

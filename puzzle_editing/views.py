@@ -181,7 +181,7 @@ class RegisterForm(forms.ModelForm):
     discord_username = forms.CharField(
         label="Discord username",
         required=False,
-        help_text="Discord username and tag (e.g. example#1234)"
+        help_text="Discord username and tag (e.g. example#1234)",
     )
     credits_name = forms.CharField(
         label="Credits name",
@@ -363,6 +363,7 @@ class PuzzleInfoForm(forms.ModelForm):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzle")
 def new(request):
     user = request.user
 
@@ -393,6 +394,7 @@ def new(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def random_answers(request):
     answers = list(PuzzleAnswer.objects.filter(puzzles__isnull=True))
     available = random.sample(answers, min(3, len(answers)))
@@ -401,6 +403,7 @@ def random_answers(request):
 
 # TODO: "authored" is now a misnomer
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def authored(request):
     puzzles = Puzzle.objects.filter(authors=request.user)
     editing_puzzles = Puzzle.objects.filter(editors=request.user)
@@ -415,6 +418,7 @@ def authored(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def all(request):
     puzzles = Puzzle.objects.all()
     return render(request, "all.html", {"puzzles": puzzles})
@@ -545,6 +549,7 @@ def add_comment(
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def puzzle(request, id):  # noqa: C901
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -829,6 +834,7 @@ class PuzzleAnswersForm(forms.ModelForm):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def puzzle_answers(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -904,6 +910,7 @@ class PuzzleTaggingForm(forms.ModelForm):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def puzzle_tags(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -941,6 +948,7 @@ def puzzle_tags(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def puzzle_postprod(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -994,6 +1002,7 @@ def puzzle_postprod(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def postprod_zip(request, id):
     pp = get_object_or_404(PuzzlePostprod, puzzle__id=id)
     loc = utils.get_latest_zip(pp)
@@ -1027,6 +1036,7 @@ class PuzzlePeopleForm(forms.ModelForm):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def puzzle_edit(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -1090,6 +1100,7 @@ def get_changed_data_message(form):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def puzzle_people(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -1124,6 +1135,7 @@ def puzzle_people(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def puzzle_escape(request, id):
     puzzle = get_object_or_404(Puzzle, id=id)
     user = request.user
@@ -1171,6 +1183,7 @@ def puzzle_escape(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def edit_comment(request, id):
     comment = get_object_or_404(PuzzleComment, id=id)
 
@@ -1216,6 +1229,7 @@ def edit_comment(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def edit_hint(request, id):
     hint = get_object_or_404(Hint, id=id)
 
@@ -1262,6 +1276,7 @@ def warn_about_testsolving(is_spoiled, in_session, has_session):
 
 
 @login_required
+@permission_required("puzzle_editing.add_testsolvesession")
 def testsolve_main(request):
     user = request.user
 
@@ -1327,6 +1342,7 @@ def testsolve_main(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_testsolvesession")
 def testsolve_finder(request):
     usernames_arg = request.GET.get("usernames")
     users = []
@@ -1395,6 +1411,7 @@ class GuessForm(forms.Form):
 
 
 @login_required
+@permission_required("puzzle_editing.add_testsolvesession")
 def testsolve_one(request, id):
     session = get_object_or_404(TestsolveSession, id=id)
     puzzle = session.puzzle
@@ -1526,6 +1543,7 @@ def testsolve_one(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def spoiled(request):
     puzzles = Puzzle.objects.filter(
         status__in=[status.TESTSOLVING, status.REVISING]
@@ -1539,7 +1557,7 @@ def spoiled(request):
 
 
 class PuzzleFinishForm(forms.Form):
-    def __init__(self, fun, difficulty, hours_spent, *args, **kwargs):
+    def __init__(self, user, fun, difficulty, hours_spent, *args, **kwargs):
         super(PuzzleFinishForm, self).__init__(*args, **kwargs)
         self.fields["fun"] = forms.ChoiceField(
             choices=[
@@ -1576,18 +1594,22 @@ class PuzzleFinishForm(forms.Form):
             min_value=0.0,
             help_text="Your best estimate of how many hours you spent on this puzzle. Decimal numbers are allowed.",
         )
-        self.fields["finish_method"] = forms.ChoiceField(
-            choices=[
+        finish_method_choices = []
+        if user.has_perm("puzzle_editing.add_puzzlecomment"):
+            finish_method_choices.append(
                 (
                     "SPOIL",
                     mark_safe(
                         "<strong>Finish, spoil me</strong>: You will be redirected to the puzzle discussion page. Select this if you finished the testsolve normally, or if you gave up and want to know how the puzzle works. (However, we encourage you to find others to join your session or ask the author/editors for hints before giving up!)"
                     ),
-                ),
+                )
+            )
+        finish_method_choices.extend(
+            [
                 (
                     "NO_SPOIL",
                     mark_safe(
-                        "<strong>Finish, don't spoil me</strong>: You will be redirected back to the puzzle testsolve session. Select this if you gave up but want to testsolve future revisions of this puzzle."
+                        "<strong>Finish, don't spoil me</strong>: You will be redirected back to the puzzle testsolve session. Select this if you are only a testsolver, or if you gave up but want to testsolve future revisions of this puzzle."
                     ),
                 ),
                 (
@@ -1596,7 +1618,10 @@ class PuzzleFinishForm(forms.Form):
                         "<strong>Leave session</strong>: You will be be removed from the list of participants of this session and will stop receiving notifications about comments or answer submissions. Select this if you joined this testsolve session but it concluded without meaningfully spoiling yourself, if you joined this session by mistake, or if this is a duplicate or merged session."
                     ),
                 ),
-            ],
+            ]
+        )
+        self.fields["finish_method"] = forms.ChoiceField(
+            choices=finish_method_choices,
             widget=forms.RadioSelect(),
             initial="SPOIL",
         )
@@ -1605,6 +1630,7 @@ class PuzzleFinishForm(forms.Form):
 
 
 @login_required
+@permission_required("puzzle_editing.add_testsolvesession")
 def testsolve_finish(request, id):
     session = get_object_or_404(TestsolveSession, id=id)
     puzzle = session.puzzle
@@ -1617,6 +1643,7 @@ def testsolve_finish(request, id):
 
     if request.method == "POST" and participation:
         form = PuzzleFinishForm(
+            request.user,
             participation.fun_rating,
             participation.difficulty_rating,
             participation.hours_spent,
@@ -1687,6 +1714,7 @@ def testsolve_finish(request, id):
 
     if participation:
         form = PuzzleFinishForm(
+            request.user,
             participation.fun_rating,
             participation.difficulty_rating,
             participation.hours_spent,
@@ -1704,6 +1732,7 @@ def testsolve_finish(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def postprod(request):
     postprodding = Puzzle.objects.filter(
         status=status.NEEDS_POSTPROD,
@@ -1721,6 +1750,7 @@ def postprod(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def factcheck(request):
     factchecking = Puzzle.objects.filter(
         (Q(status=status.NEEDS_FACTCHECK) | Q(status=status.NEEDS_COPY_EDITS))
@@ -1746,6 +1776,7 @@ def factcheck(request):
 
 
 @login_required
+@permission_required("puzzle_editing.change_round")
 def awaiting_editor(request):
     return render(
         request,
@@ -1760,6 +1791,7 @@ def awaiting_editor(request):
 
 
 @login_required
+@permission_required("puzzle_editing.change_round")
 def needs_editor(request):
     needs_editors = Puzzle.objects.annotate(
         remaining_des=(F("needed_editors") - Count("editors"))
@@ -1916,6 +1948,7 @@ def bulk_add_answers(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def tags(request):
     return render(
         request,
@@ -1925,6 +1958,7 @@ def tags(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def statistics(request):
     past_writing = 0
     past_testsolving = 0
@@ -2015,6 +2049,7 @@ class PuzzleTagForm(forms.ModelForm):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def new_tag(request):
     if request.method == "POST":
         form = PuzzleTagForm(request.POST)
@@ -2028,6 +2063,7 @@ def new_tag(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def single_tag(request, id):
     tag = get_object_or_404(PuzzleTag, id=id)
 
@@ -2047,6 +2083,7 @@ def single_tag(request, id):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def edit_tag(request, id):
     tag = get_object_or_404(PuzzleTag, id=id)
     if request.method == "POST":
@@ -2085,6 +2122,7 @@ def annotate_users_helper(user_list, annotation_kwargs):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def users(request):
     users = list(User.objects.all().select_related("profile"))
 
@@ -2148,6 +2186,7 @@ def users(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def editors(request):
     users = (
         User.objects.all()
@@ -2189,7 +2228,7 @@ def editors(request):
     for user in users:
         user.full_display_name = get_full_display_name(user)
         # FIXME You can do this quickly in Django 3.x
-        user.is_meta_editor = user.has_perm("alientoyshop.change_round")
+        user.is_meta_editor = user.has_perm("puzzle_editing.change_round")
 
     users = [user for user in users if user.is_meta_editor or user.editing_all > 0]
 
@@ -2203,6 +2242,7 @@ def editors(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def users_statuses(request):
     # distinct=True because https://stackoverflow.com/questions/59071464/django-how-to-annotate-manytomany-field-with-count
     annotation_kwargs = {
@@ -2231,6 +2271,7 @@ def users_statuses(request):
 
 
 @login_required
+@permission_required("puzzle_editing.add_puzzlecomment")
 def user(request, username: str):
     them = get_object_or_404(User, username=username)
     return render(
