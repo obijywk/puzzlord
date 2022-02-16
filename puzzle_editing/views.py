@@ -1306,8 +1306,12 @@ def testsolve_main(request):
     past_sessions = sessions.filter(joined=True, current=False)
     joinable_sessions = sessions.filter(joined=False, joinable=True)
 
+    testsolvable_statuses = [status.TESTSOLVING]
+    if user.has_perm("puzzle_editing.add_puzzle"):
+        testsolvable_statuses.append(status.CONSTRUCTOR_TESTSOLVING)
+
     testsolvable_puzzles = (
-        Puzzle.objects.filter(status=status.TESTSOLVING)
+        Puzzle.objects.filter(status__in=testsolvable_statuses)
         .annotate(
             is_author=Exists(
                 User.objects.filter(authored_puzzles=OuterRef("pk"), id=user.id)

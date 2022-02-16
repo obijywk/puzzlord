@@ -10,6 +10,7 @@ AWAITING_ANSWER = "AA"
 WRITING = "W"
 WRITING_FLEXIBLE = "WF"
 AWAITING_APPROVAL_FOR_TESTSOLVING = "AT"
+CONSTRUCTOR_TESTSOLVING = "CT"
 TESTSOLVING = "T"
 REVISING = "R"
 REVISING_POST_TESTSOLVING = "RP"
@@ -40,6 +41,7 @@ STATUSES = [
     WRITING,
     WRITING_FLEXIBLE,
     AWAITING_APPROVAL_FOR_TESTSOLVING,
+    CONSTRUCTOR_TESTSOLVING,
     TESTSOLVING,
     REVISING,
     REVISING_POST_TESTSOLVING,
@@ -102,7 +104,12 @@ BLOCKERS_AND_TRANSITIONS = {
             (DEAD, "⏹️  Mark as dead"),
         ],
     ),
-    AWAITING_EDITOR: (EDITORS, [(AWAITING_REVIEW, "✅ Mark as editors assigned"),]),
+    AWAITING_EDITOR: (
+        EDITORS,
+        [
+            (AWAITING_REVIEW, "✅ Mark as editors assigned"),
+        ],
+    ),
     AWAITING_REVIEW: (
         EDITORS,
         [
@@ -110,7 +117,8 @@ BLOCKERS_AND_TRANSITIONS = {
             (IDEA_IN_DEVELOPMENT_ASSIGNED, "❌ Request revision with answer"),
             (AWAITING_ANSWER, "✅ Approve"),
             (WRITING, "✅ Approve with answer assigned"),
-            (TESTSOLVING, "✅ Put into testsolving"),
+            (CONSTRUCTOR_TESTSOLVING, "✅ Put into construction team testsolving"),
+            (TESTSOLVING, "✅ Put into general testsolving"),
         ],
     ),
     IDEA_IN_DEVELOPMENT: (
@@ -118,7 +126,8 @@ BLOCKERS_AND_TRANSITIONS = {
         [
             (AWAITING_REVIEW, "📝 Request review"),
             (IDEA_IN_DEVELOPMENT_ASSIGNED, "✅ Mark as answer assigned"),
-            (TESTSOLVING, "✅ Put into testsolving"),
+            (CONSTRUCTOR_TESTSOLVING, "✅ Put into construction team testsolving"),
+            (TESTSOLVING, "✅ Put into general testsolving"),
         ],
     ),
     IDEA_IN_DEVELOPMENT_ASSIGNED: (
@@ -126,10 +135,16 @@ BLOCKERS_AND_TRANSITIONS = {
         [
             (WRITING, "📝 Mark as writing"),
             (AWAITING_APPROVAL_FOR_TESTSOLVING, "📝 Request approval for testsolving"),
-            (TESTSOLVING, "✅ Put into testsolving"),
+            (CONSTRUCTOR_TESTSOLVING, "✅ Put into construction team testsolving"),
+            (TESTSOLVING, "✅ Put into general testsolving"),
         ],
     ),
-    AWAITING_ANSWER: (EDITORS, [(WRITING, "✅ Mark as answer assigned"),]),
+    AWAITING_ANSWER: (
+        EDITORS,
+        [
+            (WRITING, "✅ Mark as answer assigned"),
+        ],
+    ),
     WRITING: (
         AUTHORS,
         [
@@ -147,8 +162,26 @@ BLOCKERS_AND_TRANSITIONS = {
     AWAITING_APPROVAL_FOR_TESTSOLVING: (
         EDITORS,
         [
-            (TESTSOLVING, "✅ Put into testsolving"),
+            (CONSTRUCTOR_TESTSOLVING, "✅ Put into construction team testsolving"),
+            (TESTSOLVING, "✅ Put into general testsolving"),
             (REVISING, "❌ Request puzzle revision"),
+        ],
+    ),
+    CONSTRUCTOR_TESTSOLVING: (
+        TESTSOLVERS,
+        [
+            (TESTSOLVING, "✅ Put into general testsolving"),
+            (REVISING, "❌ Request puzzle revision (needs more testsolving)"),
+            (
+                REVISING_POST_TESTSOLVING,
+                "⭕ Request puzzle revision (done with testsolving)",
+            ),
+            (
+                AWAITING_APPROVAL_POST_TESTSOLVING,
+                "📝 Accept testsolve; request approval from editors for post-testsolving",
+            ),
+            (NEEDS_SOLUTION, "✅ Accept testsolve; request solution from authors"),
+            (NEEDS_POSTPROD, "⏩ Accept testsolve and solution; request postprod"),
         ],
     ),
     TESTSOLVING: (
@@ -171,7 +204,8 @@ BLOCKERS_AND_TRANSITIONS = {
         AUTHORS,
         [
             (AWAITING_APPROVAL_FOR_TESTSOLVING, "📝 Request approval for testsolving"),
-            (TESTSOLVING, "⏩ Put into testsolving"),
+            (CONSTRUCTOR_TESTSOLVING, "⏩ Put into construction team testsolving"),
+            (TESTSOLVING, "⏩ Put into general testsolving"),
             (
                 AWAITING_APPROVAL_POST_TESTSOLVING,
                 "⏭️  Request approval to skip testsolving",
@@ -195,7 +229,8 @@ BLOCKERS_AND_TRANSITIONS = {
                 REVISING_POST_TESTSOLVING,
                 "❌ Request puzzle revision (done with testsolving)",
             ),
-            (TESTSOLVING, "🔙 Return to testsolving"),
+            (CONSTRUCTOR_TESTSOLVING, "🔙 Return to construction team testsolving"),
+            (TESTSOLVING, "🔙 Return to general testsolving"),
             (NEEDS_SOLUTION, "✅ Accept revision; request solution"),
             (NEEDS_POSTPROD, "⏩ Accept revision and solution; request postprod"),
         ],
@@ -247,7 +282,12 @@ BLOCKERS_AND_TRANSITIONS = {
             (NEEDS_COPY_EDITS, "✅ Request copy edits (for small revisions)"),
         ],
     ),
-    NEEDS_COPY_EDITS: (FACTCHECKERS, [(NEEDS_HINTS, "✅ Request Hints"),]),
+    NEEDS_COPY_EDITS: (
+        FACTCHECKERS,
+        [
+            (NEEDS_HINTS, "✅ Request Hints"),
+        ],
+    ),
     NEEDS_HINTS: (
         AUTHORS,
         [
@@ -257,9 +297,17 @@ BLOCKERS_AND_TRANSITIONS = {
     ),
     AWAITING_HINTS_APPROVAL: (
         EDITORS,
-        [(NEEDS_HINTS, "❌ Request revisions to hints"), (DONE, "✅🎆 Mark as done! 🎆✅"),],
+        [
+            (NEEDS_HINTS, "❌ Request revisions to hints"),
+            (DONE, "✅🎆 Mark as done! 🎆✅"),
+        ],
     ),
-    DEFERRED: (NOBODY, [(IDEA_IN_DEVELOPMENT, "✅ Return to in development"),]),
+    DEFERRED: (
+        NOBODY,
+        [
+            (IDEA_IN_DEVELOPMENT, "✅ Return to in development"),
+        ],
+    ),
 }
 
 
@@ -300,6 +348,7 @@ DESCRIPTIONS = {
     WRITING: "Writing (Answer Assigned)",
     WRITING_FLEXIBLE: "Writing (Answer Flexible)",
     AWAITING_APPROVAL_FOR_TESTSOLVING: "Awaiting Approval for Testsolving",
+    CONSTRUCTOR_TESTSOLVING: "Construction Team Testsolving",
     TESTSOLVING: "Testsolving",
     REVISING: "Revising (Needs Testsolving)",
     REVISING_POST_TESTSOLVING: "Revising (Done with Testsolving)",
@@ -326,6 +375,9 @@ def get_display(status):
 
 
 ALL_STATUSES = [
-    {"value": status, "display": description,}
+    {
+        "value": status,
+        "display": description,
+    }
     for status, description in DESCRIPTIONS.items()
 ]
