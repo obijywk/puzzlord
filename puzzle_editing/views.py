@@ -1613,7 +1613,7 @@ class PuzzleFinishForm(forms.Form):
                 (
                     "NO_SPOIL",
                     mark_safe(
-                        "<strong>Finish, don't spoil me</strong>: You will be redirected back to the puzzle testsolve session. Select this if you are only a testsolver, or if you gave up but want to testsolve future revisions of this puzzle."
+                        "<strong>Finish, don't spoil me</strong>: You will be redirected back to the puzzle testsolve session. Select this if you finished the testsolve normally and are not part of the puzzle construction team, or if you gave up but want to testsolve future revisions of this puzzle. <strong>If you actually worked on the puzzle, you should usually prefer this option over 'Leave session' below.</strong>"
                     ),
                 ),
                 (
@@ -1627,7 +1627,9 @@ class PuzzleFinishForm(forms.Form):
         self.fields["finish_method"] = forms.ChoiceField(
             choices=finish_method_choices,
             widget=forms.RadioSelect(),
-            initial="SPOIL",
+            initial="SPOIL"
+            if user.has_perm("puzzle_editing.add_puzzlecomment")
+            else "NO_SPOIL",
         )
 
     comment = forms.CharField(widget=MarkdownTextarea, required=False)
