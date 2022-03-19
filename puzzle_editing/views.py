@@ -1310,6 +1310,10 @@ def testsolve_main(request):
     if user.has_perm("puzzle_editing.add_puzzle"):
         testsolvable_statuses.append(status.CONSTRUCTOR_TESTSOLVING)
 
+    joinable_sessions = joinable_sessions.filter(
+        puzzle__status__in=testsolvable_statuses
+    )
+
     testsolvable_puzzles = (
         Puzzle.objects.filter(status__in=testsolvable_statuses)
         .annotate(
