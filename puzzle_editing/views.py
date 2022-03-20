@@ -654,7 +654,7 @@ def puzzle(request, id):  # noqa: C901
                             puzzle.uploaded_content.path
                         )
                     add_system_comment_here(
-                        f"Uploaded [puzzle content]({utils.get_upload_url(puzzle.uploaded_content)})"
+                        f"Uploaded [puzzle content]({request.scheme}://{request.get_host}{utils.get_upload_url(puzzle.uploaded_content)})"
                     )
                 else:
                     add_system_comment_here("Edited puzzle content")
@@ -668,7 +668,7 @@ def puzzle(request, id):  # noqa: C901
                             puzzle.uploaded_solution.path
                         )
                     add_system_comment_here(
-                        f"Uploaded a [puzzle solution]({utils.get_upload_url(puzzle.uploaded_solution)})"
+                        f"Uploaded a [puzzle solution]({request.scheme}://{request.get_host}{utils.get_upload_url(puzzle.uploaded_solution)})"
                     )
                 else:
                     add_system_comment_here("Edited puzzle solution")
