@@ -24,6 +24,7 @@ NEEDS_COPY_EDITS = "NC"
 NEEDS_FINAL_REVISIONS = "NR"
 NEEDS_HINTS = "NH"
 AWAITING_HINTS_APPROVAL = "AH"
+NEEDS_FINAL_SITE_CHECK = "NZ"
 DONE = "D"
 DEFERRED = "DF"
 DEAD = "X"
@@ -55,6 +56,7 @@ STATUSES = [
     NEEDS_COPY_EDITS,
     NEEDS_HINTS,
     AWAITING_HINTS_APPROVAL,
+    NEEDS_FINAL_SITE_CHECK,
     DONE,
     DEFERRED,
     DEAD,
@@ -273,6 +275,7 @@ BLOCKERS_AND_TRANSITIONS = {
             ),
             (NEEDS_FINAL_REVISIONS, "🟡 Request minor revisions"),
             (NEEDS_COPY_EDITS, "✅ Request copy edits"),
+            (NEEDS_FINAL_SITE_CHECK, "⏩ Request final site check"),
         ],
     ),
     NEEDS_FINAL_REVISIONS: (
@@ -299,6 +302,13 @@ BLOCKERS_AND_TRANSITIONS = {
         EDITORS,
         [
             (NEEDS_HINTS, "❌ Request revisions to hints"),
+            (DONE, "✅🎆 Mark as done! 🎆✅"),
+        ],
+    ),
+    NEEDS_FINAL_SITE_CHECK: (
+        EDITORS,
+        [
+            (NEEDS_POSTPROD, "❌ Request revisions to postprod"),
             (DONE, "✅🎆 Mark as done! 🎆✅"),
         ],
     ),
@@ -362,6 +372,7 @@ DESCRIPTIONS = {
     NEEDS_COPY_EDITS: "Needs Copy Edits",
     NEEDS_HINTS: "Needs Hints",
     AWAITING_HINTS_APPROVAL: "Awaiting Hints Approval",
+    NEEDS_FINAL_SITE_CHECK: "Needs Final Site Check",
     DONE: "Done",
     DEFERRED: "Deferred",
     DEAD: "Dead",
